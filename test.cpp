@@ -42,8 +42,8 @@ void Register(int clientfd, string register_info, sqlite3* Database )// todo: li
 	bool user_add = false;
 
 	//todo cut 3 pieces: username, e-mail, password
-	cout<<"=================================raaaaaaaw data is:========================"<<register_info<<"haha";
-	cout<<"check size of: "<<sizeof(register_info)<<endl;
+	//cout<<"=================================raaaaaaaw data is:========================"<<register_info<<"haha";
+	//cout<<"check size of: "<<sizeof(register_info)<<endl;
 	cut_pos = register_info.find(" ");
 	newline_pos  =register_info.find("\n"); 
 	//cout<<"1st time cut on ================="<<cut_pos<<endl;
@@ -51,11 +51,12 @@ void Register(int clientfd, string register_info, sqlite3* Database )// todo: li
 	if(newline_pos!=1 && newline_pos!=0 && cut_pos!= -1 && cut_pos!= 0) // if something left behind and exist a space to cut and the position is not first
 	{
 		reg_uname = register_info.substr(0,cut_pos);
-		cout<<"username: "<<reg_uname<<endl;
+		//cout<<"username: "<<reg_uname<<endl;
 		temp_str = register_info.substr(cut_pos+1);
-		cout<<"temp1: "<<temp_str;
+		//cout<<"temp1: "<<temp_str;
 	}
 	else{ //something like % register
+		send(clientfd, "Usage: register <username> <email> <password>\n", sizeof ("Usage: register <username> <email> <password>\n"), 0);
 		if(newline_pos <= 1)
 		{
 			send(clientfd, "no username.\n", sizeof("no username\n"),0);
@@ -73,11 +74,12 @@ void Register(int clientfd, string register_info, sqlite3* Database )// todo: li
 	if(newline_pos!=1 && newline_pos!=0 && cut_pos!= -1 && cut_pos!= 0)
 	{
 		reg_email = temp_str.substr(0,cut_pos);
-		cout<<"email: "<<reg_email<<endl;
+		//cout<<"email: "<<reg_email<<endl;
 		temp_str = temp_str.substr(cut_pos+1);
-		cout<<"temp2: "<<temp_str;	
+		//cout<<"temp2: "<<temp_str;	
 	}
 	else{
+		send(clientfd, "Usage: register <username> <email> <password>\n", sizeof ("Usage: register <username> <email> <password>\n"), 0);
 		if(newline_pos <= 1)
 		{
 			send(clientfd, "no email.\n", sizeof("no email\n"),0);
@@ -91,19 +93,20 @@ void Register(int clientfd, string register_info, sqlite3* Database )// todo: li
 	cut_pos = temp_str.find(" ");
 	newline_pos = temp_str.find("\n");
 	//cout<<"3rd time cut on ==============="<<cut_pos<<endl;
-	cout<<"new line position is: "<<newline_pos<<endl;
+	//cout<<"new line position is: "<<newline_pos<<endl;
 	if(newline_pos!=1 && newline_pos!=0 && cut_pos == -1) //if something left behind and no space exist
 	{
 		reg_pwd = temp_str.substr(0,newline_pos);////////////////////////
-		cout<<"password: "<<reg_pwd<<endl; //it shoud be pswd.	
-		cout<<"last cut on "<<cut_pos<<endl;
-		send(clientfd, "Register successfully.\n", 23,0);
+		//cout<<"password: "<<reg_pwd<<endl; //it shoud be pswd.	
+		//cout<<"last cut on "<<cut_pos<<endl;
+		
 		user_request = true;				
 	}
 	else{
-		cout<<"last cut on "<<cut_pos<<endl;
+		//cout<<"last cut on "<<cut_pos<<endl;
 		temp_str = temp_str.substr(cut_pos+1);
-		cout<<"temp3: "<<temp_str;//should be something left
+		//cout<<"temp3: "<<temp_str;//should be something left
+		send(clientfd, "Usage: register <username> <email> <password>\n", sizeof ("Usage: register <username> <email> <password>\n"), 0);
 		if(temp_str.empty() || (cut_pos== -1 || cut_pos== 0))
 		{
 			send(clientfd, "no password.\n", sizeof("no password\n"),0);
@@ -125,8 +128,11 @@ void Register(int clientfd, string register_info, sqlite3* Database )// todo: li
 	    char **result;
 		int rows,cols;
 		sqlite3_get_table(Database , S2.c_str(), &result , &rows, &cols, &messaggeError);
-		cout<<"rows"<<rows<<"cols"<<cols<<endl;
-		if(rows == 0 ){user_add = true;}
+		//cout<<"rows"<<rows<<"cols"<<cols<<endl;
+		if(rows == 0 ){
+			user_add = true;
+			send(clientfd, "Register successfully.\n", 23,0);
+		}
 		else 
 		{
 			send(clientfd, "Username is already used.\n", sizeof("Username is already used\n"),0);
@@ -159,14 +165,14 @@ std::string get_name(string login_info)
 	int newline_pos;
 	int cut_pos;
 	string login_uname="";
-	cout<<"raaaaaaaw data is:========================"<<login_info<<"haha";
-	cout<<"check size of: "<<sizeof(login_info)<<endl;
+	//cout<<"raaaaaaaw data is:========================"<<login_info<<"haha";
+	//cout<<"check size of: "<<sizeof(login_info)<<endl;
 	cut_pos = login_info.find(" ");
 	newline_pos = login_info.find("\n");
 	if(newline_pos!=1 && newline_pos!=0 && cut_pos!= -1 && cut_pos!= 0) // if something left behind and exist a space to cut and the position is not first
 	{
 		login_uname = login_info.substr(0,cut_pos);
-		cout<<"username: "<<login_uname<<endl;
+		//cout<<"username: "<<login_uname<<endl;
 	}
 	
 	return login_uname;	
@@ -187,7 +193,7 @@ bool log_in_process(int clientfd, string login_info, sqlite3* Database )
 	int cols, rows;
 	char **result;
 	char* messaggeError; 
-	cout<<"raaaaaaaw data is:========================"<<login_info;
+	//cout<<"raaaaaaaw data is:========================"<<login_info;
 	cut_pos = login_info.find(" ");
 	newline_pos = login_info.find("\n");
 	if(newline_pos!=1 && newline_pos!=0 && cut_pos!= -1 && cut_pos!= 0) // if something left behind and exist a space to cut and the position is not first
@@ -198,6 +204,7 @@ bool log_in_process(int clientfd, string login_info, sqlite3* Database )
 		cout<<"temp1: "<<temp_str;
 	}
 	else{ //something like % login
+		send(clientfd, "Usage: login <username> <password>\n", sizeof("Usage: login <username> <password>\n"), 0);
 		if(newline_pos <= 1)
 		{
 			send(clientfd, "no username.\n", sizeof("no username\n"),0);
@@ -215,15 +222,16 @@ bool log_in_process(int clientfd, string login_info, sqlite3* Database )
 	if(newline_pos!=1 && newline_pos!=0 && cut_pos == -1)//if something left behind and no space exist
 	{
 		login_password = temp_str.substr(0,newline_pos);
-		cout<<"password: "<<login_password; //it shoud be pswd.	
-		cout<<"last cut on "<<cut_pos<<endl;
-		send(clientfd, "Login format accept.\n", sizeof("Login format accept.\n"),0);
+		//cout<<"password: "<<login_password; //it shoud be pswd.	
+		//cout<<"last cut on "<<cut_pos<<endl;
+		//send(clientfd, "Login format accept.\n", sizeof("Login format accept.\n"),0);
 		login_request = true;
 	}
 	else{
-		cout<<"last cut on "<<cut_pos<<endl;
+		//cout<<"last cut on "<<cut_pos<<endl;
 		temp_str = temp_str.substr(cut_pos+1);
-		cout<<"temp3: "<<temp_str;//should be something left
+		//cout<<"temp3: "<<temp_str;//should be something left
+		send(clientfd, "Usage: login <username> <password>\n", sizeof("Usage: login <username> <password>\n"), 0);
 		if(temp_str.empty() || (cut_pos== -1 || cut_pos== 0))
 		{
 			send(clientfd, "no password.\n", sizeof("no password\n"),0);
@@ -242,9 +250,9 @@ bool log_in_process(int clientfd, string login_info, sqlite3* Database )
 		sql_login.append(login_password);
 		sql_login.append("')");
 
-		cout<<"my sql_login is: "<<sql_login<<endl;
+		//cout<<"my sql_login is: "<<sql_login<<endl;
 		sqlite3_get_table(Database , sql_login.c_str(), &result , &rows, &cols, &messaggeError);
-		cout<<"cols?:"<<cols<<endl;
+		//cout<<"cols?:"<<cols<<endl;
 		sqlite3_free_table(result);
 		if(cols!=0)
 		{
@@ -254,7 +262,7 @@ bool log_in_process(int clientfd, string login_info, sqlite3* Database )
 			welcome_note.append(login_uname);
 			welcome_note.append("  σ`∀´)σ\n");
 			/*static_cast<void*>(&welcome_note)*/
-			cout<<"my length is "<<welcome_note.length()<<endl;
+			//cout<<"my length is "<<welcome_note.length()<<endl;
 			send(clientfd, welcome_note.c_str() , welcome_note.length(), 0);
 			login_suc = true;
 		}
